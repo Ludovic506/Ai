@@ -1,0 +1,98 @@
+"use client"
+
+import { useState, useEffect } from 'react'
+import { Line } from 'react-chartjs-2'
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+)
+
+// Mock data - in a real application, this would come from your Python backend
+const mockData = {
+  labels: Array.from({length: 100}, (_, i) => i.toString()),
+  datasets: [
+    {
+      label: 'Close Price',
+      data: Array.from({length: 100}, () => Math.random() * 100 + 100),
+      borderColor: 'rgb(75, 192, 192)',
+      tension: 0.1
+    },
+    {
+      label: 'Trade Signals',
+      data: Array.from({length: 100}, () => Math.random() < 0.1 ? Math.random() * 100 + 100 : null),
+      borderColor: 'rgb(255, 99, 132)',
+      pointRadius: 6,
+      pointHoverRadius: 8
+    }
+  ]
+}
+
+export default function TradingDashboard() {
+  const [balance, setBalance] = useState(10000)
+  const [isTrading, setIsTrading] = useState(false)
+
+  useEffect(() => {
+    if (isTrading) {
+      const interval = setInterval(() => {
+        setBalance(prevBalance => {
+          const change = (Math.random() - 0.5) * 100
+          return Math.max(0, prevBalance + change)
+        })
+      }, 1000)
+      return () => clearInterval(interval)
+    }
+  }, [isTrading])
+
+  return (
+    <Card className="w-full max-w-4xl mx-auto">
+      <CardHeader>
+        <CardTitle>Trading Dashboard</CardTitle>
+        <CardDescription>Visualizing trading data and results</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold">Current Balance: ${balance.toFixed(2)}</h3>
+          <Button 
+            onClick={() => setIsTrading(!isTrading)}
+            className="mt-2"
+          >
+            {isTrading ? 'Stop Trading' : 'Start Trading'}
+          </Button>
+        </div>
+        <div className="h-[400px]">
+          <Line 
+            data={mockData} 
+            options={{
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                y: {
+                  beginAtZero: false
+                }
+              }
+            }} 
+          />
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
